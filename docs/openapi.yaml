@@ -1,0 +1,66 @@
+openapi: 3.1.0
+info:
+  title: RateShield API
+  version: 0.1.0
+  description: Local-only API abuse monitoring lab. Do not deploy unprotected on the public internet.
+servers:
+  - url: http://127.0.0.1:8000
+paths:
+  /api/health:
+    get:
+      summary: Check API health
+      responses:
+        '200': {description: Healthy}
+  /api/policy:
+    get:
+      summary: Read current rate limit policy
+      responses:
+        '200': {description: Current policy}
+    put:
+      summary: Edit local rate limit policy
+      description: Demo-mode localhost only
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [max_requests, window_seconds, failed_login_threshold]
+              properties:
+                max_requests: {type: integer, minimum: 1, maximum: 1000}
+                window_seconds: {type: integer, minimum: 1, maximum: 3600}
+                failed_login_threshold: {type: integer, minimum: 1, maximum: 100}
+      responses:
+        '200': {description: Policy updated}
+        '403': {description: Demo mode is not enabled}
+  /api/protected/ping:
+    get:
+      summary: Rate-limited endpoint
+      responses:
+        '200': {description: Request accepted}
+        '429': {description: Too many requests}
+  /api/demo/login:
+    post:
+      summary: Simulate login events
+      description: Demo-mode localhost only. No credentials accepted.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: {type: boolean}
+      responses:
+        '200': {description: Simulated successful login}
+        '401': {description: Simulated failed login}
+  /api/summary:
+    get:
+      summary: Security metrics and client risk
+      responses:
+        '200': {description: Summary}
+  /api/events:
+    get:
+      summary: Recent security event metadata
+      responses:
+        '200': {description: Event list}
